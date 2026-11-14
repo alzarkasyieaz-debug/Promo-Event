@@ -19,3 +19,6 @@ for v in guideVO noVO; do
     output/BRISKWALK_GenZ2026_Promo_9x16_$v.mp4
 done
 ```
+
+## Konsep 2 — Neon Vector Pulse
+Tanpa imej poster; vector animasi + cutout ucapan YB Ustaz Ismi. Lihat `docs/KONSEP2_NEON_VECTOR.md` dan `output/konsep2/`.
