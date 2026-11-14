@@ -40,12 +40,20 @@ LOGO = crop2("logo").convert("RGBA")
 
 
 def _backdrop():
-    sc = H / POSTER.height
-    bp = POSTER.resize((int(POSTER.width * sc), H), Image.LANCZOS)
-    x0 = (bp.width - W) // 2
-    bp = bp.crop((x0, 0, x0 + W, H)).filter(ImageFilter.GaussianBlur(28))
-    g = Image.fromarray(vgrad(W, H, [(6, 70, 44), (3, 40, 26), (2, 26, 17)]))
-    return Image.blend(bp, g, 0.78).convert("RGBA")
+    """Latar emerald asli (tanpa imej poster): gradien + cahaya lembut + jalur sukan emas pepenjuru."""
+    base = Image.fromarray(vgrad(W, H, [(10, 92, 58), (5, 56, 36), (2, 30, 19)])).convert("RGBA")
+    yy, xx = np.mgrid[0:H, 0:W]
+    glow = np.exp(-(((xx - W * 0.55) / (W * 0.7)) ** 2 + ((yy - H * 0.35) / (H * 0.4)) ** 2))
+    lay = np.zeros((H, W, 4), np.uint8)
+    lay[..., 0], lay[..., 1], lay[..., 2] = 60, 190, 120
+    lay[..., 3] = (glow * 70).astype(np.uint8)
+    base.alpha_composite(Image.fromarray(lay, "RGBA"))
+    st = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(st)
+    for k, (x0, wdt, al) in enumerate([(-300, 70, 34), (-120, 22, 50), (620, 110, 22), (820, 26, 46), (1000, 60, 26)]):
+        d.polygon([(x0, H), (x0 + wdt, H), (x0 + wdt + 1300, 0), (x0 + 1300, 0)], fill=(244, 190, 40, al))
+    base.alpha_composite(st.filter(ImageFilter.GaussianBlur(3)))
+    return base
 
 
 BACKDROP = _backdrop()
@@ -283,26 +291,37 @@ def scene1(t):  # 0–5.45 HOOK
 def scene2(t):  # 5.45–14.55 PERKENALKAN ACARA
     L = SCENES[1][1] - SCENES[1][0]
     c = bg(t + 10, "backdrop", parts=0.9)
+    lgp = logo_pill()
     if t < 3.4:
-        p = ease_out_cubic(t / 0.9)
-        tilt = (1 - p) * 0.9
-        pc = poster_card(820, tilt=tilt, sweep_p=(t - 1.0) / 1.4)
-        place(c, pc, CX, 700 + (1 - p) * 300, 0.75 + 0.25 * p + 0.02 * t, clamp(t / 0.25))
+        # DYNAMIC LOGO REVEAL: cincin emas mengembang, logo pop + light sweep, "JOM SERTAI!"
+        ring = ease_out_cubic(t / 0.7)
+        rl = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        dr = ImageDraw.Draw(rl)
+        for k, (r0, wd) in enumerate([(420, 10), (520, 4)]):
+            r = r0 * (0.3 + 0.7 * ease_out_cubic((t - 0.08 * k) / 0.7))
+            dr.ellipse([CX - r, 640 - r, CX + r, 640 + r], outline=(255, 214, 90, int(200 * clamp(1.4 - t / 2.4))), width=wd)
+        c.alpha_composite(rl)
+        PART.draw(c, t, 1.0, burst=ring * 0.5)
+        s, a, dx, dy = anim(t, 0.0, None, "pop", 0.4)
+        sp = sweep(lgp, (t - 0.45) / 0.9, 0.12, 160) if 0.45 < t < 1.35 else lgp
+        place(c, sp, CX, 640, s * 1.2, a)
+        s, a, dx, dy = anim(t, 0.9, 3.2, "slam", 0.22, 0.2)
+        place(c, text3d("JOM SERTAI!", 130, "gold", maxw=900), CX + dx, 1030 + dy, s, a)
         return c
     tt = t - 3.4
-    # logo reveal
-    s, a, dx, dy = anim(tt, 0.0, None, "pop", 0.35)
-    lg = sweep(LOGO, (tt - 0.3) / 0.8, 0.12, 160) if 0.3 < tt < 1.1 else LOGO
-    lgp = pill(560, 270, "white", 40, 6).copy()
-    lgp.alpha_composite(lg.resize((500, 226), Image.LANCZOS), (50, 42))
-    place(c, lgp, CX, 250, s * 0.85, a)
+    # logo bergerak dari tengah ke atas
+    q = ease_in_out(tt / 0.35)
+    place(c, lgp, CX, 640 + (250 - 640) * q, 1.2 + (0.85 - 1.2) * q, 1)
     # B-roll: masjid "aerial-style" (zoom-out perlahan) lalu peserta
-    if tt < 2.7:
+    if tt < 0.25:
+        pass
+    elif tt < 2.7:
         cd = card("masjid", 960, 440, zoom=1.35 - 0.25 * (tt / 2.7), px=0.4, py=0.6, fade_top=False)
     else:
         q = (tt - 2.7) / (L - 3.4 - 2.7)
         cd = card("walk", 960, 440, zoom=1.15 + 0.1 * q, px=0.3 + 0.3 * q, py=0.3)
-    place(c, cd, CX, 640, 1.0, clamp(tt / 0.2))
+    if tt >= 0.25:
+        place(c, cd, CX, 640, 1.0, clamp((tt - 0.25) / 0.2))
     # tajuk 3D berurutan ikut beat
     s, a, dx, dy = anim(tt, 0.25, None, "slam", 0.22)
     sp = text3d("BRISKWALK", 150, "green", maxw=900)
@@ -575,23 +594,76 @@ def scene7(t):  # 58.18–72.73 FINAL CTA
         s, a, dx, dy = anim(tt, 0.15 + 5 * BEAT, None, "up", 0.3)
         place(c, label_pill("21 NOVEMBER 2026 | MASJID AS-SIDDIQ", 46, "emerald", w=960, h=104, color=GOLD_L), CX + dx, 1040 + dy, s, a)
         return c
-    # END CARD: poster + URL + CTA
+    # END CARD: kad info motion graphics (maklumat penting poster, tanpa imej poster)
     tt = t - t_end
     hit = (L - BAR) - t_end
     c = bg(t + 60, "backdrop", parts=1.0)
     if tt >= hit:
         PART.draw(c, t, 1.0, burst=ease_out_cubic((tt - hit) / 0.8) * 0.5)
-    p = ease_out_cubic(tt / 0.6)
-    pc = poster_card(700, tilt=(1 - p) * -0.8, sweep_p=(tt - 0.7) / 1.2)
-    place(c, pc, CX, 640 + (1 - p) * 200, 0.85 + 0.15 * p, clamp(tt / 0.2))
-    s, a, dx, dy = anim(tt, 0.4, None, "up", 0.3)
-    place(c, url_pill(), CX + dx, 1250 + dy, s, a)
+    s, a, dx, dy = anim(tt, 0.0, None, "pop", 0.3)
+    place(c, logo_pill(), CX, 215, s * 0.62, a)
+    s, a, dx, dy = anim(tt, 0.08, None, "slam", 0.22)
+    sp = text3d("BRISKWALK", 112, "green", maxw=880)
+    sp = sweep(sp, (tt - 0.5) / 0.9) if 0.5 < tt < 1.4 else sp
+    place(c, sp, CX + dx, 385 + dy, s, a)
+    s, a, dx, dy = anim(tt, 0.18, None, "up", 0.25)
+    place(c, text3d("MASJID BERSAMA GEN Z 2026", 58, "gold", maxw=880, depth=5), CX + dx, 488 + dy, s, a)
+    for k, row in enumerate(info_rows()):
+        s, a, dx, dy = anim(tt, 0.32 + k * 0.14, None, "left" if k % 2 == 0 else "right", 0.3)
+        place(c, row, CX + dx, 612 + k * 114 + dy, s, a)
+    s, a, dx, dy = anim(tt, 0.95, None, "pop", 0.3)
+    qr = pill(250, 250, "white", 22, 5).copy()
+    qr.alpha_composite(QR.resize((222, 222), Image.NEAREST).convert("RGBA"), (34, 34))
+    place(c, qr, CX, 1165 + dy, s, a)
+    s, a, dx, dy = anim(tt, 1.05, None, "up", 0.3)
+    place(c, url_pill(), CX + dx, 1342 + dy, s, a)
     pul = 1 + 0.05 * max(0, math.sin(tt * 2 * math.pi / BEAT))
-    s, a, dx, dy = anim(tt, 0.7, None, "pop", 0.3)
-    place(c, label_pill("DAFTAR SEKARANG!", 62, "gold", w=640, h=118, color=EMERALD_D), CX + dx, 1385 + dy, s * pul, a)
-    s, a, dx, dy = anim(tt, 1.0, None, "fade", 0.3)
-    place(c, flat_text("Tutup: Selasa, 17 Nov 2026 • 12.00 tengah hari", 38, WHITE, F_BLACK), CX, 1478, 1, a)
+    s, a, dx, dy = anim(tt, 1.2, None, "pop", 0.3)
+    place(c, label_pill("DAFTAR SEKARANG!", 58, "gold", w=600, h=108, color=EMERALD_D), CX + dx, 1452 + dy, s * pul, a)
     return c
+
+
+@lru_cache(maxsize=None)
+def logo_pill():
+    lgp = pill(560, 270, "white", 40, 6).copy()
+    lgp.alpha_composite(LOGO.resize((500, 226), Image.LANCZOS), (50, 42))
+    return lgp
+
+
+def _mini_icon(kind, s=70):
+    if kind == "cal":
+        return icon_calendar(s, "NOV", "21")
+    if kind == "pin":
+        return icon_pin(s)
+    if kind == "clock":
+        return icon_clock(s, 0.0, 0.0)
+    return icon_people(s, 2)
+
+
+@lru_cache(maxsize=None)
+def info_rows():
+    """Baris info (sumber: poster rasmi) — hanya maklumat penting."""
+    spec = [
+        ("cal", "TARIKH PROGRAM", "SABTU • 21 NOVEMBER 2026", "emerald", GOLD_L),
+        ("pin", "LOKASI", "MASJID AS-SIDDIQ SERI ISKANDAR", "emerald", GOLD_L),
+        ("clock", "TARIKH TUTUP PENDAFTARAN", "SELASA • 17 NOV 2026 • 12.00 TENGAH HARI", "red", WHITE),
+        ("ppl", "CARA DAFTAR", "ONLINE: GOOGLE FORM  |  OFFLINE: KAUNTER MASJID", "emerald", WHITE),
+    ]
+    rows = []
+    for ic, lab, val, kind, col in spec:
+        p = pill(920, 104, kind, 24, 5).copy()
+        icn = _mini_icon(ic)
+        p.alpha_composite(icn, (20 + 18, 20 + (104 - icn.height) // 2))
+        lt = flat_text(lab, 25, GOLD_L if kind == "red" else (200, 236, 214), F_BOLD, shadow=False)
+        p.alpha_composite(lt, (20 + 96 - 24, 20 + 10 - 24 + 6))
+        f = 40
+        vt = flat_text(val, f, col, F_BLACK)
+        while vt.width - 48 > 920 - 120 and f > 22:
+            f -= 2
+            vt = flat_text(val, f, col, F_BLACK)
+        p.alpha_composite(vt, (20 + 96 - 24, 20 + 40 - 24 + 2))
+        rows.append(p)
+    return rows
 
 
 SCENE_FN = [scene1, scene2, scene3, scene4, scene5, scene6, scene7]
