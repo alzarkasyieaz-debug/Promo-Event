@@ -10,7 +10,7 @@ import numpy as np
 import qrcode
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
-from config import (W, H, FPS, BEAT, BAR, SCENES, DURATION, URL, ASSETS, BUILD, OUT, CLIP)
+from config import (W, H, FPS, BEAT, BAR, SCENES, DURATION, URL, ASSETS, BUILD, OUT, CLIP, CLIP_LEN)
 from gfx import *  # noqa
 
 os.makedirs(BUILD, exist_ok=True)
@@ -382,29 +382,25 @@ def clip_frame(i):
 
 CLIP_N = len([f for f in os.listdir(os.path.join(BUILD, "clip")) if f.endswith(".jpg")]) if os.path.isdir(os.path.join(BUILD, "clip")) else 0
 CLIP_T0 = CLIP["offset"]
-CLIP_T1 = CLIP["offset"] + CLIP["src_end"] - CLIP["src_start"]
+CLIP_T1 = CLIP["offset"] + CLIP_LEN
+CLIP_CUT = CLIP["offset"] + CLIP["segments"][0][1] - CLIP["segments"][0][0]
 
 
-def scene4(t):  # BUTIRAN ACARA: kalendar -> rakaman sebenar ustaz -> lokasi
+def scene4(t):  # RAKAMAN SEBENAR: ucapan YB Ustaz Ismi -> slam lokasi
     L = SCENES[3][1] - SCENES[3][0]
     if t < CLIP_T0:
-        c = bg(t + 30, "backdrop", parts=0.8)
-        cal = icon_calendar(470, "NOVEMBER", "21", "SABTU")
-        s, a, dx, dy = anim(t, 0.0, CLIP_T0 - 0.2, "slam", 0.25)
-        place(c, cal, CX + dx, 620 + dy, s, a)
-        s, a, dx, dy = anim(t, 0.15, CLIP_T0 - 0.2, "slam", 0.22)
-        place(c, text3d("CATAT TARIKH!", 120, "gold", maxw=900), CX + dx, 1010 + dy, s, a)
-        return c
+        return bg(t + 30, "backdrop", parts=0.8)
     if t < CLIP_T1:
         tt = t - CLIP_T0
         c = clip_frame(int(tt * FPS)).copy()
-        # push-in perlahan
-        z = 1.0 + 0.04 * tt / (CLIP_T1 - CLIP_T0)
+        # push-in perlahan setiap segmen
+        seg_t = tt if t < CLIP_CUT else t - CLIP_CUT
+        z = 1.0 + 0.012 * seg_t
         big = c.resize((int(W * z), int(H * z)), Image.BILINEAR)
         ox, oy = (big.width - W) // 2, int((big.height - H) * 0.3)
         c = big.crop((ox, oy, ox + W, oy + H))
-        # panel tarikh menutup kawasan poster lama (kanan atas)
-        s, a, dx, dy = anim(tt, 0.15, None, "right", 0.35)
+        # panel tarikh & lokasi (kanan atas)
+        s, a, dx, dy = anim(tt, 0.25, None, "right", 0.35)
         panel = pill(330, 560, "dark", 34, 6).copy()
         panel.alpha_composite(icon_calendar(250, "NOVEMBER", "21", "SABTU"), (40 + 20, 40 + 30))
         y26 = flat_text("2026", 64, GOLD_L, F_BLACK_IT)
@@ -413,28 +409,26 @@ def scene4(t):  # BUTIRAN ACARA: kalendar -> rakaman sebenar ustaz -> lokasi
         panel.alpha_composite(loc, ((panel.width - loc.width) // 2, 430))
         loc2 = flat_text("SERI ISKANDAR", 30, WHITE, F_BLACK)
         panel.alpha_composite(loc2, ((panel.width - loc2.width) // 2, 475))
-        if tt > 4.5:
-            panel = sweep(panel, (tt - 4.5) / 1.0, 0.1, 120)
+        ts = t - CLIP_CUT - 6.1   # ketika "21 bulan November"
+        if 0 < ts < 1.0:
+            panel = sweep(panel, ts, 0.1, 120)
         place(c, panel, 885 + dx, 560 + dy, s, a)
-        # label rakaman sebenar (kecil, kiri atas)
         s, a, dx, dy = anim(tt, 0.3, None, "left", 0.3)
         place(c, label_pill("JEMPUTAN KHAS", 34, "emerald", h=70, color=GOLD_L), 250 + dx, 175, s, a)
         # lower-third nama & jawatan penceramah
         dur = CLIP_T1 - CLIP_T0
         s, a, dx, dy = anim(tt, 0.45, dur - 0.35, "left", 0.4, 0.25)
-        place(c, lower_third(), 60 + lower_third().width / 2 + dx, 1195, 1, a)
+        place(c, lower_third(), 60 + lower_third().width / 2 + dx, 1140, 1, a)
         return c
     tt = t - CLIP_T1
-    q = tt / (L - CLIP_T1)
     c = bg(t + 30, "backdrop", parts=0.8)
-    cd = card("masjid", 960, 560, zoom=1.3 - 0.2 * q, px=0.45, py=0.7)
-    place(c, cd, CX, 560, 1.0, clamp(tt / 0.15))
-    s, a, dx, dy = anim(tt, 0.15, None, "drop", 0.45)
+    cd = card("masjid", 960, 560, zoom=1.25 - 0.1 * tt, px=0.45, py=0.7)
+    place(c, cd, CX, 560, 1.0, clamp(tt / 0.12))
+    s, a, dx, dy = anim(tt, 0.05, None, "drop", 0.35)
     place(c, icon_pin(210), CX + dx, 470 + dy, s, a)
-    place(c, label_pill("SABTU • 21 NOVEMBER 2026", 50, "emerald", w=760, h=96, color=GOLD_L), CX, 190, 1, clamp(tt / 0.2))
-    s, a, dx, dy = anim(tt, 0.4, None, "slam", 0.22)
+    s, a, dx, dy = anim(tt, 0.1, None, "slam", 0.2)
     place(c, text3d("MASJID AS-SIDDIQ", 112, "gold", maxw=900), CX + dx, 960 + dy, s, a)
-    s, a, dx, dy = anim(tt, 0.4 + 2 * BEAT, None, "up", 0.3)
+    s, a, dx, dy = anim(tt, 0.25, None, "slam", 0.2)
     place(c, text3d("SERI ISKANDAR", 96, "white", maxw=900), CX + dx, 1110 + dy, s, a)
     return c
 
@@ -652,7 +646,7 @@ def draw_subs(canvas, t):
 
 # ------------------------------------------------------------------ global FX
 CUT_TIMES = [a for a, b in SCENES[1:]]
-FLASHES = CUT_TIMES + [SCENES[3][0] + CLIP_T0, SCENES[3][0] + CLIP_T1, 2 * BAR, SCENES[4][0] + 3 * BAR, SCENES[6][0] + 2 * BAR, SCENES[6][1] - BAR]
+FLASHES = CUT_TIMES + [SCENES[3][0] + CLIP_CUT, SCENES[3][0] + CLIP_T1, 2 * BAR, SCENES[4][0] + 3 * BAR, SCENES[6][0] + 2 * BAR, SCENES[6][1] - BAR]
 SHAKES = [0.0, 2 * BAR, SCENES[4][0] + 3 * BAR, SCENES[6][1] - BAR] + CUT_TIMES
 
 

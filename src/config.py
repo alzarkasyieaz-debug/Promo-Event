@@ -48,12 +48,6 @@ VO = [
     dict(scene=2, offset=0.10,
          text="Bukan sekadar berjalan! Inilah peluang untuk aktif, mengeratkan ukhuwah dan mencipta kenangan bersama keluarga serta rakan-rakan!",
          tts="Bukan sekadar berjalan! Inilah peluang untuk aktif, mengeratkan ukhuwah, dan mencipta kenangan bersama keluarga serta rakan rakan!"),
-    dict(scene=3, offset=0.20, limit=1.55,
-         text="Catat tarikh!",
-         tts="Catat tarikh!"),
-    dict(scene=3, offset=9.05,
-         text="Bertempat di Masjid As-Siddiq Seri Iskandar.",
-         tts="Bertempat di Masjid As Siddiq, Seri Iskandar."),
     dict(scene=4, offset=0.60,
          text="Pendaftaran masih dibuka! Tapi ingat, tarikh tutup ialah Selasa, 17 November 2026, tepat jam 12 tengah hari!",
          tts="Pendaftaran masih dibuka! Tapi ingat, tarikh tutup ialah Selasa, tujuh belas November, dua ribu dua puluh enam, tepat jam dua belas tengah hari!"),
@@ -70,26 +64,43 @@ SUB_CHUNKS = [
     ["*Warga Seri Iskandar!*", "Dah *bersedia*", "untuk bergerak bersama?"],
     ["*Jom sertai*", "*Briskwalk Masjid* Bersama", "*Gen Z 2026*", "di *Masjid As-Siddiq*", "Seri Iskandar!"],
     ["Bukan sekadar *berjalan!*", "Inilah peluang untuk *aktif,*", "mengeratkan *ukhuwah*", "dan mencipta *kenangan*", "bersama *keluarga*", "serta *rakan-rakan!*"],
-    ["*Catat tarikh!*"],
-    ["Bertempat di", "*Masjid As-Siddiq* Seri Iskandar."],
     ["*Pendaftaran masih dibuka!*", "Tapi ingat, *tarikh tutup* ialah", "*Selasa,* *17 November 2026,*", "tepat jam *12 tengah hari!*"],
     ["Nak *daftar?*", "*Mudah* sahaja!", "Isi *Google Form*", "atau daftar terus di *kaunter*", "*Masjid As-Siddiq* Seri Iskandar."],
     ["*Jangan tunggu lagi!*", "Ajak *keluarga,*", "bawa *sahabat*", "dan *daftar sekarang!*", "Kita jumpa di", "*Briskwalk Masjid Bersama Gen Z 2026!*"],
 ]
 
-# ---- Rakaman sebenar (video Drive): petikan jemputan ustaz/AJK ----
-# Sumber: footage/drive_video.mp4 (464x832, 30 fps). Hanya ayat ini digunakan kerana
-# poster lama di latar belakang menyebut yuran/hadiah/jarak yang tiada dalam poster rasmi
-# (kawasan itu dikaburkan & ditutup panel kalendar).
+# ---- Rakaman sebenar (video Drive): ucapan YB Ustaz Ismi ----
+# Sumber: footage/drive_video.mp4 (464x832, 30 fps, 4:04).
+# Audio yang wujud dalam fail: 0:00-0:12 dan 3:52-4:01 sahaja (0:12-3:52 tiada suara, hanya dengung -50 dB).
+# Digunakan: salam (0:00-0:02.9) + jemputan penuh (3:52.6-4:01.05).
+# Tidak digunakan: 0:03-0:12 (sebut "5 km"/larian, tidak jelas & tiada dalam poster rasmi).
+# Latar belakang (poster lama: yuran RM15/cabutan bertuah/5KM) dikaburkan sepenuhnya melalui segmentasi orang.
 CLIP = dict(
     src="footage/drive_video.mp4",
-    scene=3, offset=1.60,           # mula dalam scene 4
-    src_start=232.95, src_end=240.25,
+    scene=3, offset=0.12,           # mula dalam scene 4
     speaker="YB Ustaz Ismi",
     speaker_role="Ahli Parlimen Parit",
-    text="Saya jemput orang ramai pada hujung minggu depan pada 21 bulan November.",
-    # (mula, tamat) dalam masa sumber, daripada transkripsi Whisper (word timestamps)
-    chunks=[(233.38, 235.72, "Saya jemput *orang ramai*"),
-            (235.72, 238.56, "pada *hujung minggu depan*"),
-            (238.56, 240.10, "pada *21 bulan November.*")],
+    segments=[(0.00, 2.92), (232.60, 241.05)],
+    text="Assalamualaikum warahmatullahi wabarakatuh. Sesama kita, saya jemput orang ramai pada hujung minggu depan pada 21 bulan November. Terima kasih.",
+    # (mula, tamat) dalam masa SUMBER (Whisper word timestamps)
+    chunks=[(0.00, 1.45, "*Assalamualaikum*"),
+            (1.45, 2.86, "warahmatullahi wabarakatuh."),
+            (232.75, 234.60, "*Sesama kita,*"),
+            (234.65, 236.65, "saya jemput *orang ramai*"),
+            (236.65, 238.50, "pada *hujung minggu depan*"),
+            (238.50, 240.30, "pada *21 bulan November.*"),
+            (240.35, 241.00, "*Terima kasih.*")],
 )
+
+
+def clip_src_to_local(src_t):
+    """Masa sumber -> masa relatif kepada mula klip dalam video (segmen disambung jump-cut)."""
+    acc = 0.0
+    for a, b in CLIP["segments"]:
+        if a <= src_t <= b + 1e-6:
+            return acc + (src_t - a)
+        acc += b - a
+    raise ValueError(src_t)
+
+
+CLIP_LEN = sum(b - a for a, b in CLIP["segments"])

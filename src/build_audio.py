@@ -11,7 +11,7 @@ import json, os, re, subprocess, wave
 import numpy as np
 from scipy.signal import butter, sosfilt
 
-from config import (BEAT, BAR, SCENES, DURATION, VO, SUB_CHUNKS, BUILD, OUT, CLIP, ROOT)
+from config import (BEAT, BAR, SCENES, DURATION, VO, SUB_CHUNKS, BUILD, OUT, CLIP, ROOT, CLIP_LEN, clip_src_to_local)
 
 SR = 44100
 N = int(np.ceil((DURATION + 1.5) * SR))
@@ -317,7 +317,8 @@ def build_sfx():
     c0 = S[3][0] + CLIP["offset"]
     add(sfx, whoosh(0.4), c0 - 0.25, 0.55, 0.5)
     add(sfx, shutter(), c0 + 0.05, 0.4)
-    c1 = c0 + CLIP["src_end"] - CLIP["src_start"]
+    c1 = c0 + CLIP_LEN
+    add(sfx, shutter(), c0 + CLIP["segments"][0][1] - CLIP["segments"][0][0], 0.35)   # jump cut
     add(sfx, whoosh(0.4), c1 - 0.25, 0.55, -0.5)
     add(sfx, impact(), c1, 0.5)
     # Scene 5: jam berdetik + flip
@@ -374,24 +375,28 @@ def build_vo():
 
 def clip_t(src_t):
     """Masa sumber klip -> masa video."""
-    return SCENES[CLIP["scene"]][0] + CLIP["offset"] + (src_t - CLIP["src_start"])
+    return SCENES[CLIP["scene"]][0] + CLIP["offset"] + clip_src_to_local(src_t)
 
 
 def build_clip_voice():
-    p = os.path.join(BUILD, "clip_voice.wav")
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(CLIP["src_start"]), "-to", str(CLIP["src_end"]),
-                    "-i", os.path.join(ROOT, CLIP["src"]), "-ac", "1", "-ar", str(SR),
-                    "-af", "highpass=f=90,afftdn=nf=-25,acompressor=threshold=-24dB:ratio=3:attack=5:release=120,"
-                           "equalizer=f=3000:t=q:w=1.2:g=3",
-                    "-acodec", "pcm_s16le", p], check=True)
-    x = read_wav(p)
+    parts = []
+    for k, (sa, sb) in enumerate(CLIP["segments"]):
+        p = os.path.join(BUILD, f"clip_voice_{k}.wav")
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(sa), "-to", str(sb),
+                        "-i", os.path.join(ROOT, CLIP["src"]), "-ac", "1", "-ar", str(SR),
+                        "-af", "highpass=f=90,afftdn=nf=-25,acompressor=threshold=-24dB:ratio=3:attack=5:release=120,"
+                               "equalizer=f=3000:t=q:w=1.2:g=3",
+                        "-acodec", "pcm_s16le", p], check=True)
+        y = read_wav(p)
+        f = int(0.03 * SR)
+        y[:f] *= np.linspace(0, 1, f)
+        y[-f:] *= np.linspace(1, 0, f)
+        parts.append(y)
+    x = np.concatenate(parts)
     x = x / (np.sqrt(np.mean(x ** 2)) + 1e-9) * 0.12      # RMS ~ setara VO
     x = np.clip(x, -0.95, 0.95)
-    fade = int(0.08 * SR)
-    x[:fade] *= np.linspace(0, 1, fade)
-    x[-fade:] *= np.linspace(1, 0, fade)
     buf = np.zeros((N, 2))
-    add(buf, x, clip_t(CLIP["src_start"]), 1.0)
+    add(buf, x, clip_t(CLIP["segments"][0][0]), 1.0)
     win = (clip_t(CLIP["chunks"][0][0]), clip_t(CLIP["chunks"][-1][1]))
     subs = []
     for a, b, c in CLIP["chunks"]:
