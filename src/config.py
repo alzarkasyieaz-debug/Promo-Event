@@ -85,6 +85,8 @@ CLIP = dict(
     src="footage/drive_video.mp4",
     scene=3, offset=1.60,           # mula dalam scene 4
     src_start=232.95, src_end=240.25,
+    speaker="YB Ustaz Ismi",
+    speaker_role="Ahli Parlimen Parit",
     text="Saya jemput orang ramai pada hujung minggu depan pada 21 bulan November.",
     # (mula, tamat) dalam masa sumber, daripada transkripsi Whisper (word timestamps)
     chunks=[(233.38, 235.72, "Saya jemput *orang ramai*"),

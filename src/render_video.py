@@ -351,6 +351,23 @@ def scene3(t):  # 14.55–25.45 TARIKAN UTAMA
     return c
 
 
+@lru_cache(maxsize=None)
+def lower_third():
+    """Nama & jawatan: YB Ustaz Ismi — Ahli Parlimen Parit."""
+    name = flat_text(CLIP["speaker"], 58, EMERALD_D, F_BLACK_IT, shadow=False)
+    role = flat_text(CLIP["speaker_role"], 40, WHITE, F_BLACK)
+    wN = name.width + 60
+    wR = role.width + 60
+    top = pill(wN, 96, "gold", 18, 5).copy()
+    top.alpha_composite(name, (20 + 30 - 24 + 6, (top.height - name.height) // 2 - 6))
+    bot = pill(wR, 70, "emerald", 14, 4).copy()
+    bot.alpha_composite(role, (20 + 30 - 24 + 6, (bot.height - role.height) // 2 - 6))
+    out = Image.new("RGBA", (max(top.width, bot.width + 30), top.height + bot.height - 40), (0, 0, 0, 0))
+    out.alpha_composite(bot, (30, top.height - 40))
+    out.alpha_composite(top, (0, 0))
+    return out
+
+
 _CLIP_CACHE = {}
 
 
@@ -402,6 +419,10 @@ def scene4(t):  # BUTIRAN ACARA: kalendar -> rakaman sebenar ustaz -> lokasi
         # label rakaman sebenar (kecil, kiri atas)
         s, a, dx, dy = anim(tt, 0.3, None, "left", 0.3)
         place(c, label_pill("JEMPUTAN KHAS", 34, "emerald", h=70, color=GOLD_L), 250 + dx, 175, s, a)
+        # lower-third nama & jawatan penceramah
+        dur = CLIP_T1 - CLIP_T0
+        s, a, dx, dy = anim(tt, 0.45, dur - 0.35, "left", 0.4, 0.25)
+        place(c, lower_third(), 60 + lower_third().width / 2 + dx, 1195, 1, a)
         return c
     tt = t - CLIP_T1
     q = tt / (L - CLIP_T1)
