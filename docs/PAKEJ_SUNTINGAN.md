@@ -1,7 +1,7 @@
 # Pakej Suntingan — Video Promo BRISKWALK MASJID BERSAMA GEN Z 2026
 
 **Anjuran:** Masjid As-Siddiq Seri Iskandar  
-**Format:** 9:16 · 1080×1920 · 30 fps · 72.7 saat · H.264 + AAC 48 kHz · −14 LUFS  
+**Format:** 9:16 · 1080×1920 · 30 fps · 74.5 saat · H.264 + AAC 48 kHz · −14 LUFS  
 **Muzik:** 132 BPM (1 beat = 0.4545 s, 1 bar = 1.818 s). Semua potongan scene jatuh tepat pada bar.
 
 ---
@@ -14,9 +14,11 @@
 | `BRISKWALK_GenZ2026_Promo_9x16_guideVO.mp4` | Versi lengkap dengan **VO panduan (suara TTS sintetik)** + ducking −10 dB. Untuk semakan timing / draf sahaja. |
 | `subtitles_BM.srt` | Subtitle BM bertimestamp (frasa pendek, sepadan 100% dengan skrip VO). |
 | `qr_pendaftaran.png` | Kod QR → `https://forms.gle/b9Hx6iZRGFn2xLuS6` (diuji: boleh dibaca dari frame video). |
-| `stems/music.wav`, `stems/sfx.wav`, `stems/vo_guide.wav` | Stem berasingan untuk mix semula dalam CapCut / Premiere. |
+| `stems/music.wav`, `stems/sfx.wav`, `stems/vo_guide.wav`, `stems/clip_voice.wav` | Stem berasingan (termasuk suara asli ustaz yang telah dibersihkan) untuk mix semula. |
 
-> **Sumber visual:** semua imej datang daripada **poster rasmi** (potongan kad, parallax, Ken Burns) + motion graphics. **Tiada footage AI** digunakan, jadi tiada visual yang boleh disalah anggap sebagai rakaman sebenar program.  
+> **Sumber visual:** (1) **Rakaman sebenar** daripada video Drive — petikan jemputan ustaz (sumber 3:52.95–4:00.25) di scene 4; (2) **poster rasmi** (potongan kad, parallax, Ken Burns); (3) motion graphics. **Tiada footage AI** digunakan.
+>
+> **Nota rakaman Drive:** video asal (4 min, 464×832) dirakam di depan **poster lama** yang menyebut *Yuran RM15*, *5KM*, *Cabutan Bertuah* dan tarikh *17 & 18 (Okt)*. Butiran ini **tiada dalam poster rasmi**, jadi hanya ayat jemputan penutup digunakan; kawasan poster lama **dikaburkan + ditutup panel tarikh** supaya tidak terbaca. Bahagian tengah rakaman (0:12–3:52) audionya terlalu perlahan untuk ditranskrip dengan yakin, jadi tidak digunakan.  
 > **Muzik & SFX:** dijana secara sintetik dari kod (`src/build_audio.py`) — karya asli, bebas hak cipta untuk TikTok/FB/IG/WhatsApp.
 
 ---
@@ -27,11 +29,13 @@
 |---|---|---|---|
 | 1 | 00:00.35 – 00:04.27 | Warga Seri Iskandar! Dah bersedia untuk bergerak bersama? | Bertenaga, macam hos acara. Tekan "Seri Iskandar". |
 | 2 | 00:05.90 – 00:13.15 | Jom sertai Briskwalk Masjid Bersama Gen Z 2026 di Masjid As-Siddiq Seri Iskandar! | "Briskwalk" sebut *brisk-wok*; "Gen Z" sebut *jen zed*; "2026" = dua ribu dua puluh enam. |
-| 3 | 00:14.95 – 00:23.78 | Bukan sekadar berjalan! Inilah peluang untuk aktif, mengeratkan ukhuwah dan mencipta kenangan bersama keluarga serta rakan-rakan! | Senyum dalam suara. Jeda kecil selepas "berjalan!". |
-| 4 | 00:25.85 – 00:33.99 | Catat tarikh! Sabtu, 21 November 2026, bertempat di Masjid As-Siddiq Seri Iskandar. | Jelas & perlahan sedikit pada tarikh. |
-| 5 | 00:35.15 – 00:44.94 | Pendaftaran masih dibuka! Tapi ingat, tarikh tutup ialah Selasa, 17 November 2026, tepat jam 12 tengah hari! | **Penekanan maksimum** pada "17 November" dan "12 tengah hari". |
-| 6 | 00:47.72 – 00:55.06 | Nak daftar? Mudah sahaja! Isi Google Form atau daftar terus di kaunter Masjid As-Siddiq Seri Iskandar. | Nada membantu, mudah. |
-| 7 | 00:58.68 – 01:08.39 | Jangan tunggu lagi! Ajak keluarga, bawa sahabat dan daftar sekarang! Kita jumpa di Briskwalk Masjid Bersama Gen Z 2026! | Klimaks, paling bersemangat. Berakhir sebelum hit muzik terakhir (01:10.9). |
+| 3 | 00:14.65 – 00:23.48 | Bukan sekadar berjalan! Inilah peluang untuk aktif, mengeratkan ukhuwah dan mencipta kenangan bersama keluarga serta rakan-rakan! | Senyum dalam suara. Jeda kecil selepas "berjalan!". |
+| 4a | 00:23.84 – 00:24.74 | Catat tarikh! | Pendek, tegas. |
+| ★ | 00:25.67 – 00:32.39 | *(Suara asli ustaz, rakaman sebenar)* "Saya jemput orang ramai pada hujung minggu depan pada 21 bulan November." | Bukan VO — kekalkan. |
+| 4b | 00:32.69 – 00:35.56 | Bertempat di Masjid As-Siddiq Seri Iskandar. | Jelas. "Sabtu" & "2026" dipaparkan di skrin. |
+| 5 | 00:36.96 – 00:46.76 | Pendaftaran masih dibuka! Tapi ingat, tarikh tutup ialah Selasa, 17 November 2026, tepat jam 12 tengah hari! | **Penekanan maksimum** pada "17 November" dan "12 tengah hari". |
+| 6 | 00:49.54 – 00:56.88 | Nak daftar? Mudah sahaja! Isi Google Form atau daftar terus di kaunter Masjid As-Siddiq Seri Iskandar. | Nada membantu, mudah. |
+| 7 | 01:00.50 – 01:10.21 | Jangan tunggu lagi! Ajak keluarga, bawa sahabat dan daftar sekarang! Kita jumpa di Briskwalk Masjid Bersama Gen Z 2026! | Klimaks, paling bersemangat. Berakhir sebelum hit muzik terakhir (01:12.7). |
 
 *Nota ejaan:* brief menulis "ukhwah"; ejaan baku DBP ialah **"ukhuwah"** dan itulah yang digunakan dalam VO, subtitle dan teks skrin (konsisten dengan "ERATKAN UKHUWAH!").
 
@@ -45,11 +49,11 @@
 |---|---|---|---|---|
 | **1 Hook** | 0:00.00–0:05.45 | Latar emerald gelap, sinar emas berputar laju, garisan laju (speed lines), **tapak kasut emas melangkah ikut beat**, smash cut 3 kad B-roll poster (peserta → masjid → close-up peserta) setiap 2 beat. Shake + flash pada 0:00 & 0:03.64. | "SERI ISKANDAR," (putih 3D, slam) → "ARE YOU READY?" (emas 3D) → 0:03.64 "JOM" + "BRISKWALK!" (emas, light sweep, ledakan partikel) | Boom impact 0:00, tapak kaki ×8 ikut beat, whoosh, impact 0:03.64 |
 | **2 Acara** | 0:05.45–0:14.55 | Whip pan masuk. **Poster rasmi reveal** dengan condong 3D → rata + light sweep (3.4 s). Kemudian **logo reveal** (logo masjid dari poster dalam pill putih), kad masjid "aerial-style" (zoom-out perlahan) → kad peserta (pan parallax). | 3D bertingkat ikut beat: "BRISKWALK" (hijau/emas) · "MASJID BERSAMA" · "GEN Z 2026" | Riser → whoosh → impact, shutter ×2 |
-| **3 Tarikan** | 0:14.55–0:25.45 | Montaj kad poster (peserta pelbagai generasi, close-up, masjid) bertukar setiap 4 beat, zoom-in/zoom-out berselang, beat pulse zoom. | Berurutan setiap 6 beat dengan ikon animasi: "AKTIFKAN DIRI!" ⚡ / "AJAK SAHABAT!" 👥 / "ERATKAN UKHUWAH!" ❤ / "SATUKAN GENERASI!" 👨‍👩‍👦 | Whoosh setiap slogan, tapak kaki, sorakan sintetik lembut |
-| **4 Butiran** | 0:25.45–0:34.55 | Kalendar flip 1→**21** (label SABTU), kemudian kad masjid + **pin lokasi jatuh & melantun**. Pill ringkasan tarikh kekal di atas. | "21 NOVEMBER 2026" · pill merah "SABTU" → "MASJID AS-SIDDIQ" · "SERI ISKANDAR" | Shutter, whoosh |
-| **5 Urgency** | 0:34.55–0:47.27 | Latar gelap + **vignette merah berdenyut** ikut beat. Slam "PENDAFTARAN / MASIH DIBUKA!" → kalendar flip countdown 1→**17** + jam berputar ke **12.00** → slam kotak merah-emas dengan shake. Ikon amaran bergoyang. | "PENDAFTARAN MASIH DIBUKA!" · "TARIKH TUTUP PENDAFTARAN" · **"17 NOVEMBER 2026"** · "SELASA • 12.00 TENGAH HARI" | Jam berdetik 1/8, impact besar 0:40.0, bass berdenyut 16th |
-| **6 Cara daftar** | 0:47.27–0:58.18 | Telefon dengan animasi borang digital generik (medan diisi → HANTAR ✓) → grafik kaunter pendaftaran → ringkasan 2 pill + **QR code**. | "CARA DAFTAR" · "ONLINE" "GOOGLE FORM" → "OFFLINE" "KAUNTER MASJID" → "ONLINE — GOOGLE FORM" / "OFFLINE — KAUNTER MASJID" · **URL kekal di skrin 0:48.2–0:58.2 (≈10 s)** · "IMBAS QR ATAU TAIP PAUTAN" | Bunyi tap ×5 |
-| **7 CTA akhir** | 0:58.18–1:12.73 | Push-in dramatik ke peserta + speed lines → **freeze-frame** (flash, desaturate→warna, condong) → lockup logo + tajuk → **end card: poster rasmi + URL + butang "DAFTAR SEKARANG!" berdenyut**. Hit muzik + ledakan partikel pada 1:10.9. | "JANGAN TUNGGU LAGI!" → "DAFTAR SEBELUM 17 NOVEMBER!" → "BRISKWALK MASJID BERSAMA GEN Z 2026" + "21 NOVEMBER 2026 \| MASJID AS-SIDDIQ" → poster + URL + "Tutup: Selasa, 17 Nov 2026 • 12.00 tengah hari" | Sorakan, impact, boom akhir + shutter, fade out muzik |
+| **3 Tarikan** | 0:14.55–0:23.64 | Montaj kad poster (peserta pelbagai generasi, close-up, masjid) bertukar setiap 4 beat, zoom-in/zoom-out berselang, beat pulse zoom. | Berurutan setiap 5 beat dengan ikon animasi: "AKTIFKAN DIRI!" ⚡ / "AJAK SAHABAT!" 👥 / "ERATKAN UKHUWAH!" ❤ / "SATUKAN GENERASI!" 👨‍👩‍👦 | Whoosh setiap slogan, tapak kaki, sorakan sintetik lembut |
+| **4 Butiran + rakaman sebenar** | 0:23.64–0:36.36 | (a) 0:23.64 kalendar **21 / SABTU** slam. (b) **0:25.24–0:32.54 rakaman sebenar ustaz** (push-in 4%, grade hangat, upscale 1080×1920, poster lama dikaburkan); panel emerald-emas di kanan atas: kalendar 21 NOV SABTU · 2026 · MASJID AS-SIDDIQ SERI ISKANDAR (light sweep semasa beliau sebut "21 bulan November"); tag kecil "JEMPUTAN KHAS". (c) 0:32.54 kad masjid + **pin lokasi jatuh & melantun**. | "CATAT TARIKH!" → (subtitle suara ustaz) → "SABTU • 21 NOVEMBER 2026" · "MASJID AS-SIDDIQ" · "SERI ISKANDAR" | Shutter, whoosh + flash masuk/keluar klip, impact; muzik di-duck −13 dB semasa ustaz bercakap |
+| **5 Urgency** | 0:36.36–0:49.09 | Latar gelap + **vignette merah berdenyut** ikut beat. Slam "PENDAFTARAN / MASIH DIBUKA!" → kalendar flip countdown 1→**17** + jam berputar ke **12.00** → slam kotak merah-emas dengan shake. Ikon amaran bergoyang. | "PENDAFTARAN MASIH DIBUKA!" · "TARIKH TUTUP PENDAFTARAN" · **"17 NOVEMBER 2026"** · "SELASA • 12.00 TENGAH HARI" | Jam berdetik 1/8, impact besar 0:41.8, bass berdenyut 16th |
+| **6 Cara daftar** | 0:49.09–1:00.00 | Telefon dengan animasi borang digital generik (medan diisi → HANTAR ✓) → grafik kaunter pendaftaran → ringkasan 2 pill + **QR code**. | "CARA DAFTAR" · "ONLINE" "GOOGLE FORM" → "OFFLINE" "KAUNTER MASJID" → "ONLINE — GOOGLE FORM" / "OFFLINE — KAUNTER MASJID" · **URL kekal di skrin 0:50.0–1:00.0 (≈10 s)** · "IMBAS QR ATAU TAIP PAUTAN" | Bunyi tap ×5 |
+| **7 CTA akhir** | 1:00.00–1:14.55 | Push-in dramatik ke peserta + speed lines → **freeze-frame** (flash, desaturate→warna, condong) → lockup logo + tajuk → **end card: poster rasmi + URL + butang "DAFTAR SEKARANG!" berdenyut**. Hit muzik + ledakan partikel pada 1:12.7. | "JANGAN TUNGGU LAGI!" → "DAFTAR SEBELUM 17 NOVEMBER!" → "BRISKWALK MASJID BERSAMA GEN Z 2026" + "21 NOVEMBER 2026 \| MASJID AS-SIDDIQ" → poster + URL + "Tutup: Selasa, 17 Nov 2026 • 12.00 tengah hari" | Sorakan, impact, boom akhir + shutter, fade out muzik |
 
 **Safe area:** semua teks dalam x 60–980 px, y 150–1500 px (paksi tengah x = 520 untuk mengelak butang kanan TikTok/Reels). Subtitle berpusat pada y ≈ 1395 px.
 
@@ -62,7 +66,7 @@ Gaya: Inter Display Black 60 px, putih, outline hitam 7 px + bayang lembut, **ka
 1. **Warga Seri Iskandar!** / Dah **bersedia** / untuk bergerak bersama?
 2. **Jom sertai** / **Briskwalk Masjid** Bersama / **Gen Z 2026** / di **Masjid As-Siddiq** / Seri Iskandar!
 3. Bukan sekadar **berjalan!** / Inilah peluang untuk **aktif,** / mengeratkan **ukhuwah** / dan mencipta **kenangan** / bersama **keluarga** / serta **rakan-rakan!**
-4. **Catat tarikh!** / **Sabtu, 21 November 2026,** / bertempat di / **Masjid As-Siddiq** Seri Iskandar.
+4. **Catat tarikh!** — *(ustaz)* Saya jemput **orang ramai** / pada **hujung minggu depan** / pada **21 bulan November.** — Bertempat di / **Masjid As-Siddiq** Seri Iskandar.
 5. **Pendaftaran masih dibuka!** / Tapi ingat, **tarikh tutup** ialah / **Selasa, 17 November 2026,** / tepat jam **12 tengah hari!**
 6. Nak **daftar?** / **Mudah** sahaja! / Isi **Google Form** / atau daftar terus di **kaunter** / **Masjid As-Siddiq** Seri Iskandar.
 7. **Jangan tunggu lagi!** / Ajak **keluarga,** / bawa **sahabat** / dan **daftar sekarang!** / Kita jumpa di / **Briskwalk Masjid Bersama Gen Z 2026!**
@@ -72,6 +76,8 @@ Jika VO sebenar berbeza tempo, import SRT ke CapCut (*Text → Captions → Impo
 ---
 
 ## 5. Senarai B-roll
+
+**Rakaman sebenar digunakan:** petikan jemputan ustaz (video Drive, 3:52.95–4:00.25).
 
 **Digunakan dalam video (dari poster rasmi):** kad peserta berjalan (lebar), close-up peserta lelaki & pakcik, peserta wanita bertudung, kumpulan kanan, Masjid As-Siddiq (menara + dewan solat), logo masjid.
 
@@ -158,12 +164,15 @@ Alternatif berlesen jika mahu muzik lain: YouTube Audio Library, CapCut Commerci
 - [x] Tiada hadiah, yuran, slot, jarak, masa mula/berkumpul atau aktiviti tambahan direka
 - [x] Tiada dakwaan "slot hampir habis"
 - [x] Logo & poster tidak diubah (dipotong/dipaparkan sahaja)
+- [x] Poster lama dalam rakaman Drive (RM15 / 5KM / Cabutan Bertuah / 17 & 18 Okt) dikaburkan — tidak terbaca
+- [ ] **Semak:** ustaz menyebut "hujung minggu depan" — tepat jika video disiar 14–15 Nov 2026; selepas itu tarikh di skrin tetap jelas (21 Nov)
 
 ## 12. Bina semula
 
 ```bash
 pip install numpy scipy pillow qrcode opencv-python-headless
 apt-get install -y espeak-ng ffmpeg
-cd src && python3 build_audio.py && python3 render_video.py
+# letak video Drive di footage/drive_video.mp4
+cd src && python3 build_audio.py && python3 prep_clip.py && python3 render_video.py
 # kemudian mux: lihat README.md
 ```

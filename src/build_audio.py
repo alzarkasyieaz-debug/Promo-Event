@@ -11,7 +11,7 @@ import json, os, re, subprocess, wave
 import numpy as np
 from scipy.signal import butter, sosfilt
 
-from config import (BEAT, BAR, SCENES, DURATION, VO, SUB_CHUNKS, BUILD, OUT)
+from config import (BEAT, BAR, SCENES, DURATION, VO, SUB_CHUNKS, BUILD, OUT, CLIP, ROOT)
 
 SR = 44100
 N = int(np.ceil((DURATION + 1.5) * SR))
@@ -312,9 +312,14 @@ def build_sfx():
     add(sfx, cheer(4.0), S[2][0] + 5.5, 0.30)
     for k in range(6):
         add(sfx, footstep(), S[2][0] + 0.2 + k * BEAT, 0.35, (-1) ** k * 0.4)
-    # Scene 4: pop kalendar & pin
+    # Scene 4: kalendar -> rakaman sebenar ustaz -> pin lokasi
     add(sfx, shutter(), S[3][0] + 0.4, 0.4)
-    add(sfx, whoosh(0.35), S[3][0] + 4 * BEAT - 0.1, 0.4, 0.5)
+    c0 = S[3][0] + CLIP["offset"]
+    add(sfx, whoosh(0.4), c0 - 0.25, 0.55, 0.5)
+    add(sfx, shutter(), c0 + 0.05, 0.4)
+    c1 = c0 + CLIP["src_end"] - CLIP["src_start"]
+    add(sfx, whoosh(0.4), c1 - 0.25, 0.55, -0.5)
+    add(sfx, impact(), c1, 0.5)
     # Scene 5: jam berdetik + flip
     for k in range(int((S[4][1] - S[4][0]) / BEAT * 2)):
         add(sfx, tick(), S[4][0] + k * BEAT / 2, 0.35 if k % 2 == 0 else 0.2)
@@ -359,12 +364,45 @@ def build_vo():
         x = x / np.abs(x).max() * 0.9
         start = SCENES[line["scene"]][0] + line["offset"]
         dur = len(x) / SR
-        limit = SCENES[line["scene"]][1] - 0.15
+        limit = (SCENES[line["scene"]][0] + line["limit"]) if "limit" in line else SCENES[line["scene"]][1] - 0.15
         assert start + dur <= limit, f"VO {k} terlalu panjang: {start + dur:.2f} > {limit:.2f}"
         add(vo, x, start, 0.95)
         windows.append((start, start + dur))
         lines.append(dict(start=start, end=start + dur))
     return vo, windows, lines
+
+
+def clip_t(src_t):
+    """Masa sumber klip -> masa video."""
+    return SCENES[CLIP["scene"]][0] + CLIP["offset"] + (src_t - CLIP["src_start"])
+
+
+def build_clip_voice():
+    p = os.path.join(BUILD, "clip_voice.wav")
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(CLIP["src_start"]), "-to", str(CLIP["src_end"]),
+                    "-i", os.path.join(ROOT, CLIP["src"]), "-ac", "1", "-ar", str(SR),
+                    "-af", "highpass=f=90,afftdn=nf=-25,acompressor=threshold=-24dB:ratio=3:attack=5:release=120,"
+                           "equalizer=f=3000:t=q:w=1.2:g=3",
+                    "-acodec", "pcm_s16le", p], check=True)
+    x = read_wav(p)
+    x = x / (np.sqrt(np.mean(x ** 2)) + 1e-9) * 0.12      # RMS ~ setara VO
+    x = np.clip(x, -0.95, 0.95)
+    fade = int(0.08 * SR)
+    x[:fade] *= np.linspace(0, 1, fade)
+    x[-fade:] *= np.linspace(1, 0, fade)
+    buf = np.zeros((N, 2))
+    add(buf, x, clip_t(CLIP["src_start"]), 1.0)
+    win = (clip_t(CLIP["chunks"][0][0]), clip_t(CLIP["chunks"][-1][1]))
+    subs = []
+    for a, b, c in CLIP["chunks"]:
+        words = []
+        for seg in re.split(r"(\*[^*]+\*)", c):
+            if seg.strip():
+                for wd in seg.strip("*").split():
+                    words.append(dict(w=wd, hl=seg.startswith("*")))
+        subs.append(dict(scene=CLIP["scene"], start=round(clip_t(a), 3), end=round(clip_t(b), 3), words=words, real=True))
+    assert " ".join(c.replace("*", "") for _, _, c in CLIP["chunks"]) == CLIP["text"]
+    return buf, win, subs
 
 
 def chunk_timing(lines):
@@ -440,25 +478,30 @@ def main():
     sfx = build_sfx()
     vo, windows, lines = build_vo()
     subs = chunk_timing(lines)
+    clipv, cwin, csubs = build_clip_voice()
+    subs = sorted(subs + csubs, key=lambda d: d["start"])
 
     music_n = music / np.abs(music).max() * 0.55
     sfx_n = sfx / np.abs(sfx).max() * 0.55
     write_wav(os.path.join(BUILD, "music.wav"), music_n)
     write_wav(os.path.join(BUILD, "sfx.wav"), sfx_n)
     write_wav(os.path.join(BUILD, "vo_guide.wav"), vo)
+    write_wav(os.path.join(BUILD, "clip_voice.wav"), clipv)
 
-    g_vo = duck_env(windows, -10)[:, None]
-    g_no = duck_env(windows, -4)[:, None]
-    write_wav(os.path.join(BUILD, "mix_guideVO.wav"), master(music_n * g_vo + sfx_n * (0.6 + 0.4 * g_vo) + vo * 1.15))
-    write_wav(os.path.join(BUILD, "mix_noVO.wav"), master(music_n * g_no + sfx_n))
+    g_clip = duck_env([cwin], -13)[:, None]
+    g_vo = np.minimum(duck_env(windows, -10)[:, None], g_clip)
+    g_no = np.minimum(duck_env(windows, -4)[:, None], g_clip)
+    write_wav(os.path.join(BUILD, "mix_guideVO.wav"), master(music_n * g_vo + sfx_n * (0.6 + 0.4 * g_vo) + vo * 1.15 + clipv * 1.15))
+    write_wav(os.path.join(BUILD, "mix_noVO.wav"), master(music_n * g_no + sfx_n * (0.6 + 0.4 * g_clip) + clipv * 1.15))
 
     with open(os.path.join(BUILD, "timing.json"), "w") as f:
-        json.dump(dict(vo=lines, subs=subs), f, indent=1, ensure_ascii=False)
+        json.dump(dict(vo=lines, subs=subs, clip_window=cwin), f, indent=1, ensure_ascii=False)
     with open(os.path.join(OUT, "subtitles_BM.srt"), "w", encoding="utf-8") as f:
         for i, s in enumerate(subs, 1):
             f.write(f"{i}\n{srt_time(s['start'])} --> {srt_time(s['end'])}\n{' '.join(w['w'] for w in s['words'])}\n\n")
     for k, ln in enumerate(lines):
-        print(f"VO{k+1}: {ln['start']:.2f}-{ln['end']:.2f} ({ln['end']-ln['start']:.2f}s) scene {SCENES[k][0]:.2f}-{SCENES[k][1]:.2f}")
+        print(f"VO{k+1}: {ln['start']:.2f}-{ln['end']:.2f} ({ln['end']-ln['start']:.2f}s)")
+    print(f"CLIP speech: {cwin[0]:.2f}-{cwin[1]:.2f}")
 
 
 if __name__ == "__main__":

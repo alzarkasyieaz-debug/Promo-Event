@@ -10,7 +10,7 @@ import numpy as np
 import qrcode
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
-from config import (W, H, FPS, BEAT, BAR, SCENES, DURATION, URL, ASSETS, BUILD, OUT)
+from config import (W, H, FPS, BEAT, BAR, SCENES, DURATION, URL, ASSETS, BUILD, OUT, CLIP)
 from gfx import *  # noqa
 
 os.makedirs(BUILD, exist_ok=True)
@@ -351,42 +351,70 @@ def scene3(t):  # 14.55–25.45 TARIKAN UTAMA
     return c
 
 
-def scene4(t):  # 25.45–34.55 BUTIRAN ACARA
+_CLIP_CACHE = {}
+
+
+def clip_frame(i):
+    i = max(0, min(i, CLIP_N - 1))
+    if i not in _CLIP_CACHE:
+        if len(_CLIP_CACHE) > 8:
+            _CLIP_CACHE.clear()
+        _CLIP_CACHE[i] = Image.open(os.path.join(BUILD, "clip", f"{i:05d}.jpg")).convert("RGBA")
+    return _CLIP_CACHE[i]
+
+
+CLIP_N = len([f for f in os.listdir(os.path.join(BUILD, "clip")) if f.endswith(".jpg")]) if os.path.isdir(os.path.join(BUILD, "clip")) else 0
+CLIP_T0 = CLIP["offset"]
+CLIP_T1 = CLIP["offset"] + CLIP["src_end"] - CLIP["src_start"]
+
+
+def scene4(t):  # BUTIRAN ACARA: kalendar -> rakaman sebenar ustaz -> lokasi
     L = SCENES[3][1] - SCENES[3][0]
+    if t < CLIP_T0:
+        c = bg(t + 30, "backdrop", parts=0.8)
+        cal = icon_calendar(470, "NOVEMBER", "21", "SABTU")
+        s, a, dx, dy = anim(t, 0.0, CLIP_T0 - 0.2, "slam", 0.25)
+        place(c, cal, CX + dx, 620 + dy, s, a)
+        s, a, dx, dy = anim(t, 0.15, CLIP_T0 - 0.2, "slam", 0.22)
+        place(c, text3d("CATAT TARIKH!", 120, "gold", maxw=900), CX + dx, 1010 + dy, s, a)
+        return c
+    if t < CLIP_T1:
+        tt = t - CLIP_T0
+        c = clip_frame(int(tt * FPS)).copy()
+        # push-in perlahan
+        z = 1.0 + 0.04 * tt / (CLIP_T1 - CLIP_T0)
+        big = c.resize((int(W * z), int(H * z)), Image.BILINEAR)
+        ox, oy = (big.width - W) // 2, int((big.height - H) * 0.3)
+        c = big.crop((ox, oy, ox + W, oy + H))
+        # panel tarikh menutup kawasan poster lama (kanan atas)
+        s, a, dx, dy = anim(tt, 0.15, None, "right", 0.35)
+        panel = pill(330, 560, "dark", 34, 6).copy()
+        panel.alpha_composite(icon_calendar(250, "NOVEMBER", "21", "SABTU"), (40 + 20, 40 + 30))
+        y26 = flat_text("2026", 64, GOLD_L, F_BLACK_IT)
+        panel.alpha_composite(y26, ((panel.width - y26.width) // 2, 340))
+        loc = flat_text("MASJID AS-SIDDIQ", 30, WHITE, F_BLACK)
+        panel.alpha_composite(loc, ((panel.width - loc.width) // 2, 430))
+        loc2 = flat_text("SERI ISKANDAR", 30, WHITE, F_BLACK)
+        panel.alpha_composite(loc2, ((panel.width - loc2.width) // 2, 475))
+        if tt > 4.5:
+            panel = sweep(panel, (tt - 4.5) / 1.0, 0.1, 120)
+        place(c, panel, 885 + dx, 560 + dy, s, a)
+        # label rakaman sebenar (kecil, kiri atas)
+        s, a, dx, dy = anim(tt, 0.3, None, "left", 0.3)
+        place(c, label_pill("JEMPUTAN KHAS", 34, "emerald", h=70, color=GOLD_L), 250 + dx, 175, s, a)
+        return c
+    tt = t - CLIP_T1
+    q = tt / (L - CLIP_T1)
     c = bg(t + 30, "backdrop", parts=0.8)
-    split = 4.4
-    if t < split:
-        # kalendar flip ke 21
-        flip_end = 1.0
-        if t < flip_end:
-            n = 1 + int(20 * ease_out_cubic(t / flip_end))
-            ph = (t * 18) % 1
-            sy = abs(math.cos(ph * math.pi))
-        else:
-            n, sy = 21, 1.0
-        cal = icon_calendar(470, "NOVEMBER", str(n), "SABTU" if n == 21 else "")
-        s, a, dx, dy = anim(t, 0.0, split - 0.2, "pop", 0.35)
-        cal_s = cal.resize((cal.width, max(2, int(cal.height * (0.55 + 0.45 * sy)))), Image.BILINEAR)
-        place(c, cal_s, CX + dx, 560 + dy, s, a)
-        s, a, dx, dy = anim(t, flip_end, split - 0.2, "slam", 0.22)
-        sp = text3d("21 NOVEMBER 2026", 108, "gold", maxw=900)
-        sp = sweep(sp, (t - 1.4) / 0.9) if 1.4 < t < 2.3 else sp
-        place(c, sp, CX + dx, 960 + dy, s, a)
-        s, a, dx, dy = anim(t, flip_end + 2 * BEAT, split - 0.2, "pop", 0.3)
-        place(c, label_pill("SABTU", 86, "red", w=420, h=140), CX + dx, 1135 + dy, s, a)
-    else:
-        tt = t - split
-        q = tt / (L - split)
-        cd = card("masjid", 960, 560, zoom=1.3 - 0.2 * q, px=0.45, py=0.7)
-        place(c, cd, CX, 560, 1.0, clamp(tt / 0.15))
-        s, a, dx, dy = anim(tt, 0.15, None, "drop", 0.45)
-        place(c, icon_pin(210), CX + dx, 470 + dy, s, a)
-        # tarikh kecil kekal sebagai ringkasan
-        place(c, label_pill("SABTU • 21 NOVEMBER 2026", 50, "emerald", w=760, h=96, color=GOLD_L), CX, 190, 1, clamp(tt / 0.2))
-        s, a, dx, dy = anim(tt, 0.5, None, "slam", 0.22)
-        place(c, text3d("MASJID AS-SIDDIQ", 112, "gold", maxw=900), CX + dx, 960 + dy, s, a)
-        s, a, dx, dy = anim(tt, 0.5 + 2 * BEAT, None, "up", 0.3)
-        place(c, text3d("SERI ISKANDAR", 96, "white", maxw=900), CX + dx, 1110 + dy, s, a)
+    cd = card("masjid", 960, 560, zoom=1.3 - 0.2 * q, px=0.45, py=0.7)
+    place(c, cd, CX, 560, 1.0, clamp(tt / 0.15))
+    s, a, dx, dy = anim(tt, 0.15, None, "drop", 0.45)
+    place(c, icon_pin(210), CX + dx, 470 + dy, s, a)
+    place(c, label_pill("SABTU • 21 NOVEMBER 2026", 50, "emerald", w=760, h=96, color=GOLD_L), CX, 190, 1, clamp(tt / 0.2))
+    s, a, dx, dy = anim(tt, 0.4, None, "slam", 0.22)
+    place(c, text3d("MASJID AS-SIDDIQ", 112, "gold", maxw=900), CX + dx, 960 + dy, s, a)
+    s, a, dx, dy = anim(tt, 0.4 + 2 * BEAT, None, "up", 0.3)
+    place(c, text3d("SERI ISKANDAR", 96, "white", maxw=900), CX + dx, 1110 + dy, s, a)
     return c
 
 
@@ -603,7 +631,7 @@ def draw_subs(canvas, t):
 
 # ------------------------------------------------------------------ global FX
 CUT_TIMES = [a for a, b in SCENES[1:]]
-FLASHES = CUT_TIMES + [2 * BAR, SCENES[4][0] + 3 * BAR, SCENES[6][0] + 2 * BAR, SCENES[6][1] - BAR]
+FLASHES = CUT_TIMES + [SCENES[3][0] + CLIP_T0, SCENES[3][0] + CLIP_T1, 2 * BAR, SCENES[4][0] + 3 * BAR, SCENES[6][0] + 2 * BAR, SCENES[6][1] - BAR]
 SHAKES = [0.0, 2 * BAR, SCENES[4][0] + 3 * BAR, SCENES[6][1] - BAR] + CUT_TIMES
 
 
